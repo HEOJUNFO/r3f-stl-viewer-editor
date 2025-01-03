@@ -65,7 +65,7 @@ function ControlsPanel({
         }}
         onClick={() => setIsMemoMode(prev => !prev)}
       >
-        {isMemoMode ? '메모 모드 종료' : '메모 모드 시작'}
+        {isMemoMode ? '메모 종료' : '메모 시작'}
       </Button>
     </Box>
   );

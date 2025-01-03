@@ -26,7 +26,7 @@ function STLViewer({
   };
 
   return (
-    <Canvas style={{ width: '100%', height: '100%', background: '#000', }} camera={{ position: [0, 0, 5] }}>
+    <Canvas style={{ width: '100%', height: '100%' }} camera={{ position: [0, 0, 5] }}>
       <OrbitControls />
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 10, 10]} intensity={1} />
