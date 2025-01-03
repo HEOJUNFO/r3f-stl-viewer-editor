@@ -16,6 +16,9 @@ function DragDropStlViewer() {
   const [geometry, setGeometry] = useState(null);
   const [opacity, setOpacity] = useState(1);
 
+  // 메모 모드 여부 (false = 꺼짐, true = 켜짐)
+  const [isMemoMode, setIsMemoMode] = useState(false);
+
   // 메모 배열: [{ position: [x,y,z], text: '메모 내용' }, ...]
   const [memos, setMemos] = useState([]);
 
@@ -68,10 +71,16 @@ function DragDropStlViewer() {
   };
 
   /**
-   * (A) 모델(mesh)을 클릭 → 새 메모 작성 다이얼로그 열기
+   * (A) 모델(mesh)을 클릭
+   *    -> 메모 모드일 때만 "새 메모" 생성 다이얼로그 열기
    */
   const handleMeshClick = (e) => {
     e.stopPropagation(); // 이벤트 전파 방지
+    
+    // 메모 모드가 아닐 경우 아무것도 하지 않음
+    if (!isMemoMode) return;
+
+    // 메모 모드인 경우에만 새 메모 생성
     const clickPos = e.point;
     setNewMemoPosition([clickPos.x, clickPos.y, clickPos.z]);
     setNewMemoDialogOpen(true);
@@ -102,7 +111,6 @@ function DragDropStlViewer() {
 
   /**
    * (B) 메모 아이콘(구)을 클릭 → 해당 메모를 읽거나 수정/삭제 할 다이얼로그 열기
-   * - index를 함께 저장해두어야 수정/삭제 시 특정 메모를 식별 가능
    */
   const handleMemoIconClick = (e, memoIndex) => {
     e.stopPropagation(); // mesh 클릭 이벤트(handleMeshClick) 방지
@@ -139,7 +147,6 @@ function DragDropStlViewer() {
 
   /**
    * 수정 모드에서 "저장" 버튼
-   * - editedText로 memos 배열을 업데이트
    */
   const handleSaveEditedMemo = () => {
     if (selectedMemoIndex === null) return;
@@ -163,7 +170,9 @@ function DragDropStlViewer() {
       onDragOver={handleDragOver}
     >
       {/* 
-        [1] 투명도 조절 UI
+        [1] 좌측 상단 UI 영역
+          - 투명도 슬라이더
+          - "메모 모드" 버튼
       */}
       <Box
         sx={{
@@ -176,10 +185,11 @@ function DragDropStlViewer() {
           borderRadius: '8px',
         }}
       >
+        {/* 투명도 조절 */}
         <Typography variant="body1" color="white" sx={{ mb: 1 }}>
           Opacity
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', width: 200 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', width: 200, mb: 2 }}>
           <Slider
             value={opacity}
             onChange={handleOpacityChange}
@@ -196,6 +206,15 @@ function DragDropStlViewer() {
             {opacity.toFixed(2)}
           </Typography>
         </Box>
+
+        {/* 메모 모드 토글 버튼 */}
+        <Button
+          variant={isMemoMode ? 'contained' : 'outlined'}
+          color="primary"
+          onClick={() => setIsMemoMode((prev) => !prev)}
+        >
+          {isMemoMode ? '메모 모드 종료' : '메모 모드 시작'}
+        </Button>
       </Box>
 
       {/* 
@@ -235,7 +254,6 @@ function DragDropStlViewer() {
       */}
       <Dialog open={newMemoDialogOpen} onClose={handleCloseNewMemoDialog}>
         <DialogTitle>새 메모 작성</DialogTitle>
-        <Box sx={{ height: 0}} />
         <DialogContent>
           <TextField
             label="메모 내용"
@@ -245,6 +263,7 @@ function DragDropStlViewer() {
             rows={3}
             autoFocus
             fullWidth
+            sx={{ mt: 2 }}
           />
         </DialogContent>
         <DialogActions>
@@ -260,7 +279,6 @@ function DragDropStlViewer() {
       */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>메모 내용</DialogTitle>
-        <Box sx={{ height: 0}} />
         <DialogContent>
           {isEditing ? (
             // 수정 모드: TextField로 편집
@@ -272,10 +290,11 @@ function DragDropStlViewer() {
               rows={3}
               autoFocus
               fullWidth
+              sx={{ mt: 2 }}
             />
           ) : (
             // 읽기 모드
-            <DialogContentText>
+            <DialogContentText sx={{ mt: 2 }}>
               {selectedMemoIndex !== null ? memos[selectedMemoIndex].text : ''}
             </DialogContentText>
           )}
